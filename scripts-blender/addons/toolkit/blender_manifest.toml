@@ -1,0 +1,20 @@
+schema_version = "1.0.0"
+
+id = "srm-toolkit"
+version = "0.0.1"
+name = "SRM Toolkit"
+tagline = ""
+maintainer = "stef"
+type = "add-on"
+website = "https://github.com/stuf/srm-toolkit"
+tags = ["Rigging"]
+
+blender_version_min = "5.0.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later"
+]
+
+copyright = [
+  "2024-2026 stuf"
+]

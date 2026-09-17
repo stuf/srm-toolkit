@@ -1,0 +1,9 @@
+{
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportOptionalMemberAccess": "none",
+    "reportInvalidTypeForm": "none",
+    "reportReturnType": "none",
+    "reportAssignmentType": "none",
+    "reportOptionalIterable": "none"
+  }
+}
