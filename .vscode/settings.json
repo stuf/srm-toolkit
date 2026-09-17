@@ -4,5 +4,8 @@
     "editor.defaultFormatter": "eeyore.yapf"
   },
   "editor.formatOnSave": true,
-  "editor.formatOnSaveMode": "file"
+  "editor.formatOnSaveMode": "file",
+  "explorer.autoRevealExclude": {
+    ".venv/**": true
+  }
 }
