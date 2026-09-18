@@ -1,0 +1,19 @@
+[project]
+name = "srm-cli"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Stefan Rimaila", email = "stefan@rimaila.fi" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "pillow>=12.3.0",
+]
+
+[project.scripts]
+srm-cli = "srm_cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"

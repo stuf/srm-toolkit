@@ -9,3 +9,8 @@ line-length = 120
 
 [tool.yapf]
 BASED_ON_STYLE = "pep8"
+
+[tool.uv.workspace]
+members = [
+    "scripts/srm-cli",
+]
