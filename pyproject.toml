@@ -6,3 +6,6 @@ requires-python = ">= 3.11"
 
 [tool.black]
 line-length = 120
+
+[tool.yapf]
+BASED_ON_STYLE = "pep8"

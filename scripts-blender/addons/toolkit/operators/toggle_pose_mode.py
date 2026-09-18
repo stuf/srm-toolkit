@@ -2,7 +2,7 @@ from bpy.types import Operator
 
 
 class SRM_OT_toggle_pose_mode(Operator):
-    """Toggle armature between pose/rest position"""
+    """Toggle armature between Pose/Rest position"""
     bl_idname = "srm.toggle_pose_mode"
     bl_label = "Toggle Pose Mode"
     bl_options = {'REGISTER', 'UNDO'}
