@@ -12,8 +12,8 @@ def setup_logger(logger: logging.Logger):
 
     logger.setLevel(logging.DEBUG)
 
-    formatter = logging.Formatter(fmt='{levelname:>8} {name:>20} | {message}',
-                                  style='{')
+    formatter = logging.Formatter(
+        fmt='{name:.<20} {levelname:.>5} | {message}', style='{')
 
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)

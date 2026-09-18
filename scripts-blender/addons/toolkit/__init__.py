@@ -30,7 +30,7 @@ def register_unregister_modules(modules: list[ModuleType], register: bool):
     un = "un" if not register else ""
 
     for mod in modules:
-        logger.info('registering module {}'.format(mod.__name__))
+        logger.info(' - registering: {}'.format(mod.__name__))
         if register:
             importlib.reload(mod)
 
@@ -39,7 +39,9 @@ def register_unregister_modules(modules: list[ModuleType], register: bool):
                 try:
                     register_func(class_to_reg)
                 except Exception as e:
-
+                    logger.warning(
+                        f'Coult not {un}register class: {class_to_reg.__name__}'
+                    )
                     print(
                         f'Warning: Could not {un}register class: {class_to_reg.__name__}'
                     )
