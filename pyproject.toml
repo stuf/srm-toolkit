@@ -15,8 +15,8 @@ srm-cli = { workspace = true }
 
 [tool.uv.workspace]
 members = [
-    "scripts/srm-cli",
+    "packages/srm-cli",
 ]
 exclude = [
-    "scripts-blender/*
+    "scripts-blender/*"
 ]
