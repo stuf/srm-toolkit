@@ -10,7 +10,13 @@ line-length = 120
 [tool.yapf]
 BASED_ON_STYLE = "pep8"
 
+[tool.uv.sources]
+srm-cli = { workspace = true }
+
 [tool.uv.workspace]
 members = [
     "scripts/srm-cli",
+]
+exclude = [
+    "scripts-blender/*
 ]
