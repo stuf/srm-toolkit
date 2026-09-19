@@ -64,6 +64,7 @@ def alpha(path: Path,
     files = path.rglob('*.png')
     filelist = [f for f in files if f.stem.endswith(suffix)]
     filecount = len(filelist)
+    not_handled = 0
     already_handled = 0
     handled_filecount = 0
 
@@ -77,9 +78,7 @@ def alpha(path: Path,
         opa_filepath = Path(*fpp)
 
         if opa_filepath.exists():
-            print(f'{opa_filepath} exists, skip')
             already_handled += 1
-            # this already exists, should skip
             continue
 
         alpha = im.getchannel('A')
@@ -88,7 +87,7 @@ def alpha(path: Path,
 
         # If the minimum alpha is 255 there is probably no alpha at all
         if pix_min == 255:
-            print(f'{f} has no alpha, skip')
+            not_handled += 1
             continue
 
         alpha_image = Image.new('RGBA', im.size, (0, 0, 0, 255))
@@ -101,9 +100,12 @@ def alpha(path: Path,
 
         handled_filecount += 1
 
-    print(
-        f'{handled_filecount}/{filecount} file(s) handled, {already_handled} already handled'
-    )
+    print(' | '.join([
+        f'{handled_filecount} done',
+        f'{already_handled} existed',
+        f'{not_handled} no alpha',
+        f'{filecount} files total',
+    ]))
 
 
 #
