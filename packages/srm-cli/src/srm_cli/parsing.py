@@ -1,9 +1,6 @@
-from typing import Tuple
+from typing import Tuple, Dict, List
 from enum import Enum
 import re
-
-PROCESSING = r'Processing'
-PROCESSING_END = r'...'
 
 
 class BfresOutput(Enum):
@@ -35,7 +32,10 @@ def handle_bfres_line(line: str) -> HandleBfresResult | None:
     return None
 
 
-def parse_bfres_stdout(stdout: str) -> dict[str, list[str]]:
+BfresTaskResult = Dict[str, List[str]]
+
+
+def parse_bfres_stdout(stdout: str) -> Dict[str, List[str]]:
     lines = stdout.strip().split('\n')
 
     result = {}

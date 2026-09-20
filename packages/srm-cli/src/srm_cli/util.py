@@ -2,7 +2,6 @@ import logging
 
 
 def setup_logger(logger: logging.Logger):
-    print('setup logger')
     if logger.hasHandlers():
         logger.handlers.clear()
 
@@ -18,3 +17,7 @@ def setup_logger(logger: logging.Logger):
 def set_loglevel(logger: logging.Logger, verbose: bool):
     print(f'set loglevel {verbose=}')
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+
+
+def pluralize(n: int, noun: str):
+    return f'{n} {noun}{"s"[:n^1]}'

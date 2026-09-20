@@ -5,20 +5,21 @@ from pprint import pprint
 from PIL import Image
 from PIL.ImageOps import invert
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Tuple
 
 import typer
-from rich.progress import track
+from rich.progress import track, Progress
 
-from .util import setup_logger, set_loglevel
+from .util import setup_logger, set_loglevel, pluralize
 
 logger = logging.getLogger(__name__)
 
-app = typer.Typer(help='Helpppp', no_args_is_help=True)
+app = typer.Typer(help='Oft-wished-for utilities and tools',
+                  no_args_is_help=True)
 
 
-@app.command(name='normals')
-def normals(
+@app.command()
+def normalfix(
     path: Path,
     suffix: Annotated[str, typer.Option('--suffix')] = 'Nrm',
     dry_run: Annotated[
@@ -31,16 +32,18 @@ def normals(
         bool, typer.Option('--recursive/--no-recurse', '-r')] = True):
     """Naïvely add a blue color channel to red-green normalmaps.
     """
-    print(f'{path=}')
-    files = path.rglob('*.png')
+    set_loglevel(logger, verbose)
+
+    files = path.rglob('*.png') if recursive else path.glob('*.png')
     filelist = [f for f in files if f.stem.endswith(suffix)]
 
     already_handled = 0
     handled_filecount = 0
     filecount = len(filelist)
-    print(f'{filecount} file(s) in total')
 
-    for file in track(filelist, description="Doing thing"):
+    logger.info(f'{pluralize(filecount, "file")} found.')
+
+    for file in track(filelist, description="Processing", transient=True):
         im = Image.open(file)
 
         if im.mode == 'RGBA':
@@ -54,37 +57,42 @@ def normals(
 
                 im_ = Image.merge('RGBA', (r, g, b, a))
 
-                print(f' - saving fixed normalmaps {file}')
+                logger.debug(' - saving fixed normalmap %s', file)
                 if not dry_run:
                     im_.save(file)
                 handled_filecount += 1
             else:
                 already_handled += 1
 
-    print(
-        f'Handled {handled_filecount}/{filecount} file(s), {already_handled} file(s) already handled.'
-    )
+    logger.info(f'{pluralize(filecount, "file")} total.')
+    logger.info(f'{pluralize(handled_filecount, "file")} processed')
+    logger.info(f'{pluralize(already_handled, "file")} already processed')
 
 
 #
 
 
 @app.command()
-def alpha(path: Path,
-          suffix: Annotated[str, typer.Option('--suffix')] = 'Alb',
-          recursive: Annotated[bool,
-                               typer.Option('--recursive', '-r')] = False,
-          output_suffix: Annotated[str,
-                                   typer.Option('--output-suffix')] = 'Opa',
-          dry_run: Annotated[bool, typer.Option('--dry-run', '-n')] = False):
+def alpha(
+        path: Path,
+        suffix: Annotated[str, typer.Option('--suffix')] = 'Alb',
+        verbose: Annotated[bool,
+                           typer.Option('--verbose/--quiet', '-v/-q')] = False,
+        recursive: Annotated[bool, typer.Option('--recursive', '-r')] = False,
+        output_suffix: Annotated[str, typer.Option('--output-suffix')] = 'Opa',
+        dry_run: Annotated[bool, typer.Option('--dry-run', '-n')] = False):
     """Handle (usually Spl2) Alb textures that use alpha channels,
        extract alpha channel into its own texture."""
+    set_loglevel(logger, verbose)
+
     files = path.rglob('*.png') if recursive else path.glob('*.png')
     filelist = [f for f in files if f.stem.endswith(suffix)]
     filecount = len(filelist)
     not_handled = 0
     already_handled = 0
     handled_filecount = 0
+
+    logger.info('Files to process: %s', filecount)
 
     for f in track(filelist, 'Separating alpha maps'):
         im = Image.open(f)
@@ -118,19 +126,29 @@ def alpha(path: Path,
 
         handled_filecount += 1
 
-    print(' | '.join([
-        f'{handled_filecount} done',
-        f'{already_handled} existed',
-        f'{not_handled} no alpha',
-        f'{filecount} files total',
-    ]))
+    logger.info(f'{pluralize(handled_filecount, "file")} processed.')
+    logger.info(
+        f'{pluralize(already_handled, "file")} already processed, skipped.')
+    logger.info(
+        f'{pluralize(not_handled, "file")} not processed; no alpha in file.')
+    logger.info(f'{pluralize(filecount, "file")} in total')
+
+
+def validate_bfrestocast_bin(val: Path):
+    """Validate path to BfresToCast is valid"""
+    if not val.exists():
+        raise typer.BadParameter('binpath does not exist')
+
+    if not val.is_file():
+        raise typer.BadParameter('binpath is not a path to a file')
 
 
 @app.command()
 def cast(
     path: Path,
     binpath: Annotated[Path,
-                       typer.Argument(envvar='SRM_BFRES_TO_CAST_BIN_PATH')],
+                       typer.Argument(envvar='SRM_BFRES_TO_CAST_BIN_PATH',
+                                      callback=validate_bfrestocast_bin)],
     verbose: Annotated[bool,
                        typer.Option('--verbose/--quiet', '-v/-q')] = False,
     recursive: Annotated[
@@ -138,42 +156,42 @@ def cast(
 ):
     """Utility to batch-convert bfres files into the cast format
     """
-    set_loglevel(logger, verbose)
-    if not path.exists():
-        raise FileNotFoundError('cant do shit')
-    if not binpath.exists():
-        raise FileNotFoundError('invalid binpath')
-
-    globs = ['*.bfres', '*.bfres.zs']
-    logger.debug(f'using globs {globs}')
-
     import subprocess
     from .parsing import parse_bfres_stdout
 
+    set_loglevel(logger, verbose)
+    if not path.exists():
+        raise FileNotFoundError('given path does not exist')
+
+    globs = ['*.bfres', '*.bfres.zs']
+    logger.debug(f'using globs {globs}')
+    filelist: list[Path] = []
+    tasks_done: dict[str, list[str]] = {}
+
     for glob in globs:
         files = path.rglob(glob) if recursive else path.glob(glob)
-        filelist = list(files)
+        filelist.extend(list(files))
 
-        for f in filelist:
-            cmd = [str(binpath), str(f)]
-            logger.debug(f'{cmd=}')
+    logger.info('First run after a while may take longer than usual.')
 
-            try:
-                res = subprocess.run(cmd,
-                                     encoding='UTF-8',
-                                     capture_output=True,
-                                     check=True)
+    for f in track(filelist, 'Converting bfres to cast', transient=True):
+        cmd = [str(binpath), str(f)]
+        logger.debug(f'{cmd=}')
 
-                out = parse_bfres_stdout(res.stdout)
+        try:
+            res = subprocess.run(cmd,
+                                 encoding='UTF-8',
+                                 capture_output=True,
+                                 check=True)
 
-                for elem_name, elem_parts in out.items():
-                    logger.info('output model %s\t%s texture(s)', elem_name,
-                                len(elem_parts))
+            out = parse_bfres_stdout(res.stdout)
+            tasks_done[str(f)] = out
+        except subprocess.CalledProcessError as e:
+            logger.error('error in running cmd %s', ' '.join(cmd), extra=e)
 
-                    for part in elem_parts:
-                        logger.debug(f' - {elem_name} -> {part}')
-            except subprocess.CalledProcessError as e:
-                logger.error('error in running cmd %s', ' '.join(cmd), extra=e)
+    res = tasks_done.keys()
+    logger.info('%s file(s) converted', len(res))
+    logger.info(' - %s', ', '.join(res))
 
 
 #
