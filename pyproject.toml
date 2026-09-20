@@ -3,6 +3,7 @@ name = "srm-toolkit"
 version = "0.0.1"
 readme = "README.md"
 requires-python = ">= 3.11"
+dependencies = []
 
 [tool.black]
 line-length = 120

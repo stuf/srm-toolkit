@@ -177,10 +177,11 @@ wheels = [
 
 [[package]]
 name = "srm-cli"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/srm-cli" }
 dependencies = [
     { name = "pillow" },
+    { name = "rich" },
     { name = "rich-progress" },
     { name = "typer" },
 ]
@@ -188,6 +189,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "pillow", specifier = ">=12.3.0" },
+    { name = "rich", specifier = ">=15.0.0" },
     { name = "rich-progress", specifier = ">=0.4.0" },
     { name = "typer", specifier = ">=0.27.2" },
 ]
