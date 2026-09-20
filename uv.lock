@@ -178,7 +178,7 @@ wheels = [
 [[package]]
 name = "srm-cli"
 version = "0.1.0"
-source = { editable = "scripts/srm-cli" }
+source = { editable = "packages/srm-cli" }
 dependencies = [
     { name = "pillow" },
     { name = "rich-progress" },

@@ -1,3 +1,5 @@
+Most of the contents of this is hacky and using it to learn Python to some extent.
+
 # srm-toolkit
 
 - [cli](./scripts/srm-cli/)
