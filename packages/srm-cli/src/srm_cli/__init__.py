@@ -1,22 +1,36 @@
 import time
+import logging
+from pprint import pprint
+
 from PIL import Image
 from PIL.ImageOps import invert
 from pathlib import Path
 from typing import Annotated
+
 import typer
 from rich.progress import track
+
+from .util import setup_logger, set_loglevel
+
+logger = logging.getLogger(__name__)
 
 app = typer.Typer(help='Helpppp', no_args_is_help=True)
 
 
 @app.command(name='normals')
 def normals(
-        path: Path,
-        suffix: Annotated[str, typer.Option('--suffix')] = 'Nrm',
-        dry_run: Annotated[
-            bool,
-            typer.Option('--dry-run', help='Don\'t make any changes')] = False,
-        recursive: Annotated[bool, typer.Option('--recursive')] = True):
+    path: Path,
+    suffix: Annotated[str, typer.Option('--suffix')] = 'Nrm',
+    dry_run: Annotated[
+        bool,
+        typer.Option('--dry-run', '-n', help='Don\'t make any changes'
+                     )] = False,
+    verbose: Annotated[bool,
+                       typer.Option('--verbose/--quiet', '-v/-q')] = False,
+    recursive: Annotated[
+        bool, typer.Option('--recursive/--no-recurse', '-r')] = True):
+    """Naïvely add a blue color channel to red-green normalmaps.
+    """
     print(f'{path=}')
     files = path.rglob('*.png')
     filelist = [f for f in files if f.stem.endswith(suffix)]
@@ -58,10 +72,14 @@ def normals(
 @app.command()
 def alpha(path: Path,
           suffix: Annotated[str, typer.Option('--suffix')] = 'Alb',
+          recursive: Annotated[bool,
+                               typer.Option('--recursive', '-r')] = False,
           output_suffix: Annotated[str,
                                    typer.Option('--output-suffix')] = 'Opa',
-          dry_run: Annotated[bool, typer.Option('--dry-run')] = False):
-    files = path.rglob('*.png')
+          dry_run: Annotated[bool, typer.Option('--dry-run', '-n')] = False):
+    """Handle (usually Spl2) Alb textures that use alpha channels,
+       extract alpha channel into its own texture."""
+    files = path.rglob('*.png') if recursive else path.glob('*.png')
     filelist = [f for f in files if f.stem.endswith(suffix)]
     filecount = len(filelist)
     not_handled = 0
@@ -108,10 +126,61 @@ def alpha(path: Path,
     ]))
 
 
+@app.command()
+def cast(
+    path: Path,
+    binpath: Annotated[Path,
+                       typer.Argument(envvar='SRM_BFRES_TO_CAST_BIN_PATH')],
+    verbose: Annotated[bool,
+                       typer.Option('--verbose/--quiet', '-v/-q')] = False,
+    recursive: Annotated[
+        bool, typer.Option('--recursive/--no-recurse', '-r')] = False,
+):
+    """Utility to batch-convert bfres files into the cast format
+    """
+    set_loglevel(logger, verbose)
+    if not path.exists():
+        raise FileNotFoundError('cant do shit')
+    if not binpath.exists():
+        raise FileNotFoundError('invalid binpath')
+
+    globs = ['*.bfres', '*.bfres.zs']
+    logger.debug(f'using globs {globs}')
+
+    import subprocess
+    from .parsing import parse_bfres_stdout
+
+    for glob in globs:
+        files = path.rglob(glob) if recursive else path.glob(glob)
+        filelist = list(files)
+
+        for f in filelist:
+            cmd = [str(binpath), str(f)]
+            logger.debug(f'{cmd=}')
+
+            try:
+                res = subprocess.run(cmd,
+                                     encoding='UTF-8',
+                                     capture_output=True,
+                                     check=True)
+
+                out = parse_bfres_stdout(res.stdout)
+
+                for elem_name, elem_parts in out.items():
+                    logger.info('output model %s\t%s texture(s)', elem_name,
+                                len(elem_parts))
+
+                    for part in elem_parts:
+                        logger.debug(f' - {elem_name} -> {part}')
+            except subprocess.CalledProcessError as e:
+                logger.error('error in running cmd %s', ' '.join(cmd), extra=e)
+
+
 #
 
 
 def main() -> None:
+    setup_logger(logger)
     app()
 
 
