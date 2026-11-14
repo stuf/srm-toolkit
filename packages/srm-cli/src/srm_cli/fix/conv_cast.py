@@ -14,7 +14,7 @@ def validate_bfrestocast_bin_path(val: Path):
 
 
 @app.command()
-def cast(
+def conv_cast(
     path: Path,
     binpath: Annotated[Path,
                        typer.Argument(envvar='SRM_BFRESTOCAST_BIN',

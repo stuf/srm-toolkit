@@ -11,7 +11,7 @@ app = typer.Typer()
 
 
 @app.command()
-def alpha(
+def fix_alpha(
     path: Path,
     suffix: Annotated[str, typer.Option("--suffix")] = "Alb",
     verbose: Annotated[

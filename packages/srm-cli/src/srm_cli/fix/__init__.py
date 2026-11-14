@@ -1,10 +1,10 @@
 import async_typer as typer
 
-from srm_cli.fix.normalmaps import app as normalmaps
-from srm_cli.fix.alpha import app as alpha
-from srm_cli.fix.cast import app as cast
+from srm_cli.fix.fix_normalmaps import app as fix_normalmaps
+from srm_cli.fix.fix_alpha import app as fix_alpha
+from srm_cli.fix.conv_cast import app as conv_cast
 
 app = typer.Typer()
-app.add_typer(normalmaps)
-app.add_typer(alpha)
-app.add_typer(cast)
+app.add_typer(fix_normalmaps)
+app.add_typer(fix_alpha)
+app.add_typer(conv_cast)
