@@ -3,13 +3,16 @@ name = "srm-toolkit"
 version = "0.0.1"
 readme = "README.md"
 requires-python = ">= 3.11"
-dependencies = []
+dependencies = [
+    "async-typer>=0.27.2",
+    "black>=26.10.1",
+    "devtools>=0.13.0",
+    "rich>=15.0.0",
+    "types-pillow>=10.2.0.20240822",
+]
 
 [tool.black]
 line-length = 120
-
-[tool.yapf]
-BASED_ON_STYLE = "pep8"
 
 [tool.uv.sources]
 srm-cli = { workspace = true }
