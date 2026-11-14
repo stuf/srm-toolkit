@@ -75,3 +75,7 @@ def alpha(
                 alpha_image.save(str(opa_filepath))
 
             stats.handled += 1
+
+
+if __name__ == '__main__':
+    app()

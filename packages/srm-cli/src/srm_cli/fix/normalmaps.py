@@ -91,3 +91,7 @@ def fix_normalmaps(
 
     for l in out:
         con.print(f" - {l}")
+
+
+if __name__ == '__main__':
+    app()
