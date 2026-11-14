@@ -13,9 +13,7 @@ into its own file.
 You can do a `--dry-run` to have the tool run without making changes.
 
 ```sh
-srm-cli normals --dry-run path/to/dir
-```
-
-```sh
-srm-cli alpha --dry-run path/to/dir
+srm-cli fix-normalmaps --help # fix normalmaps
+srm-cli fix-alpha --help      # extract alpha channel
+srm-cli conv-cast --help      # batch bfres to cast conversion
 ```
